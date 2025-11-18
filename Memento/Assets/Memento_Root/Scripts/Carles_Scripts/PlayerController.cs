@@ -11,13 +11,19 @@ public class PlayerController : MonoBehaviour
     public Transform camara;        
     public float limiteVertical = 80f;
 
-    [Header("Headbob")]
+    [Header("Headbob (terror estilo P.T.)")]
     public bool usarHeadbob = true;
-    public float amplitudPaso = 0.03f;     
-    public float frecuenciaPaso = 1.6f;    
-    public float amplitudIdle = 0.01f;     
-    public float frecuenciaIdle = 1.0f;    
-    public float suavizadoHeadbob = 8f;   
+    public float amplitudPaso = 0.035f;
+    public float frecuenciaPaso = 1.4f;
+    public float amplitudIdle = 0.006f;
+    public float frecuenciaIdle = 0.8f;
+    public float suavizadoHeadbob = 12f;
+
+    [Header("Camera Sway (tipo P.T.)")]
+    public bool usarSway = true;
+    public float swayCantidad = 1.5f;      
+    public float swayMaxAngulo = 2f;      
+    public float swaySuavizado = 8f;       
 
     CharacterController controller;
     Vector3 velocidadVertical;
@@ -42,22 +48,24 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        float mouseX = Input.GetAxis("Mouse X") * sensibilidadRaton * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * sensibilidadRaton * Time.deltaTime;
+        float rawMouseX = Input.GetAxis("Mouse X");
+        float rawMouseY = Input.GetAxis("Mouse Y");
+
+        float mouseX = rawMouseX * sensibilidadRaton * Time.deltaTime;
+        float mouseY = rawMouseY * sensibilidadRaton * Time.deltaTime;
 
         rotacionX -= mouseY;
         rotacionX = Mathf.Clamp(rotacionX, -limiteVertical, limiteVertical);
-        if (camara != null)
-            camara.localRotation = Quaternion.Euler(rotacionX, 0f, 0f);
 
         transform.Rotate(Vector3.up * mouseX);
+
+        ActualizarCameraSway(rawMouseX, rawMouseY);
 
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
         Vector3 input = (transform.right * x + transform.forward * z).normalized;
-
-        float intensidadMovimiento = new Vector2(x, z).magnitude; 
+        float intensidadMovimiento = new Vector2(x, z).magnitude;
 
         controller.Move(input * velocidad * Time.deltaTime);
 
@@ -82,7 +90,7 @@ public class PlayerController : MonoBehaviour
             contadorHeadbob += Time.deltaTime * frecuenciaPaso * (0.5f + intensidadMovimiento);
 
             float bobY = Mathf.Sin(contadorHeadbob) * amplitudPaso;
-            float bobX = Mathf.Cos(contadorHeadbob * 0.5f) * amplitudPaso * 0.5f; 
+            float bobX = Mathf.Cos(contadorHeadbob * 0.5f) * amplitudPaso * 0.5f;
 
             Vector3 objetivo = camaraPosLocalInicial + new Vector3(bobX, bobY, 0f);
             camara.localPosition = Vector3.Lerp(camara.localPosition, objetivo, Time.deltaTime * suavizadoHeadbob);
@@ -90,9 +98,34 @@ public class PlayerController : MonoBehaviour
         else
         {
             contadorHeadbob += Time.deltaTime * frecuenciaIdle;
+
             float bobY = Mathf.Sin(contadorHeadbob) * amplitudIdle;
+
             Vector3 objetivo = camaraPosLocalInicial + new Vector3(0f, bobY, 0f);
             camara.localPosition = Vector3.Lerp(camara.localPosition, objetivo, Time.deltaTime * (suavizadoHeadbob * 0.5f));
         }
+    }
+
+    void ActualizarCameraSway(float rawMouseX, float rawMouseY)
+    {
+        if (!usarSway || camara == null)
+        {
+            camara.localRotation = Quaternion.Euler(rotacionX, 0f, 0f);
+            return;
+        }
+
+        float swayX = Mathf.Clamp(-rawMouseY * swayCantidad, -swayMaxAngulo, swayMaxAngulo); 
+        float swayZ = Mathf.Clamp(-rawMouseX * swayCantidad, -swayMaxAngulo, swayMaxAngulo); 
+
+        Quaternion rotBase = Quaternion.Euler(rotacionX, 0f, 0f);
+        Quaternion rotSway = Quaternion.Euler(swayX, 0f, swayZ);
+
+        Quaternion rotObjetivo = rotBase * rotSway;
+
+        camara.localRotation = Quaternion.Slerp(
+            camara.localRotation,
+            rotObjetivo,
+            Time.deltaTime * swaySuavizado
+        );
     }
 }
