@@ -1,38 +1,54 @@
-using UnityEngine;
+锘縰sing UnityEngine;
+using UnityEngine.UI;
 
 public class ObjectInspectManager : MonoBehaviour
 {
     [Header("Referencias")]
     public PlayerController playerController;   
-    public Camera playerCamera;               
-    public Transform inspectAnchor;           
-    public GameObject inspectBackgroundUI;      
+    public Camera playerCamera;                
+    public Transform inspectAnchor;
+    public GameObject inspectCanvas;
 
-    [Header("Interacci髇")]
+    [Header("Interacci贸n")]
     public KeyCode interactKey = KeyCode.E;
     public float interactDistance = 3f;
     public LayerMask interactLayerMask = ~0;  
 
-    [Header("Inspecci髇")]
+    [Header("Inspecci贸n")]
     public float rotationSpeed = 200f;
 
     bool inspecting = false;
     GameObject currentInstance;
     InteractableItem currentItem;
 
+    void Start()
+    {
+        if (inspectCanvas != null)
+        {
+            inspectCanvas.SetActive(false);
+        }
+    }
+
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.F1) && inspectCanvas != null)
+        {
+            bool newState = !inspectCanvas.activeSelf;
+            inspectCanvas.SetActive(newState);
+            Debug.Log("[Inspect][DEBUG] F1 -> Canvas = " + newState);
+        }
+
         if (!inspecting)
         {
-            DetectarInteraccion();
+            DetectarInteraccion();  
         }
         else
         {
-            RotarObjeto();
+            RotarObjeto();        
 
             if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(KeyCode.Escape))
             {
-                TerminarInspeccion();
+                TerminarInspeccion(); 
             }
         }
     }
@@ -47,7 +63,6 @@ public class ObjectInspectManager : MonoBehaviour
 
             if (item != null)
             {
-
                 if (Input.GetKeyDown(interactKey))
                 {
                     EmpezarInspeccion(item);
@@ -60,7 +75,7 @@ public class ObjectInspectManager : MonoBehaviour
     {
         if (item.inspectPrefab == null || inspectAnchor == null)
         {
-            Debug.LogWarning("Falta inspectPrefab o inspectAnchor en ObjectInspectManager.");
+            Debug.LogWarning("[Inspect] Falta inspectPrefab o inspectAnchor");
             return;
         }
 
@@ -70,8 +85,11 @@ public class ObjectInspectManager : MonoBehaviour
         if (playerController != null)
             playerController.enabled = false;
 
-        if (inspectBackgroundUI != null)
-            inspectBackgroundUI.SetActive(true);
+        if (inspectCanvas != null)
+        {
+            Debug.Log("[Inspect] Activando Canvas de inspecci贸n");
+            inspectCanvas.SetActive(true);
+        }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -83,7 +101,12 @@ public class ObjectInspectManager : MonoBehaviour
             inspectAnchor
         );
 
-
+        var rb = currentInstance.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
     }
 
     void TerminarInspeccion()
@@ -93,11 +116,15 @@ public class ObjectInspectManager : MonoBehaviour
         if (playerController != null)
             playerController.enabled = true;
 
-        if (inspectBackgroundUI != null)
-            inspectBackgroundUI.SetActive(false);
+        if (inspectCanvas != null)
+        {
+            Debug.Log("[Inspect] Apagando Canvas de inspecci贸n");
+            inspectCanvas.SetActive(false);
+        }
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
         if (currentInstance != null)
             Destroy(currentInstance);
 
