@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Rotación FPS")]
     public float sensibilidadRaton = 300f;
-    public Transform camara;        
+    public Transform camara;          
     public float limiteVertical = 80f;
 
     [Header("Headbob (terror estilo P.T.)")]
@@ -21,9 +21,17 @@ public class PlayerController : MonoBehaviour
 
     [Header("Camera Sway (tipo P.T.)")]
     public bool usarSway = true;
-    public float swayCantidad = 1.5f;      
-    public float swayMaxAngulo = 2f;      
-    public float swaySuavizado = 8f;       
+    public float swayCantidad = 1.5f;
+    public float swayMaxAngulo = 2f;
+    public float swaySuavizado = 8f;
+
+    [Header("Crouch (agacharse)")]
+    public bool permitirAgacharse = true;
+    public KeyCode teclaAgacharse = KeyCode.LeftShift;
+    public float alturaAgachado = 1.0f;       
+    public float velocidadAgachado = 3f;     
+    public float offsetCamaraAgachado = 0.5f; 
+    public float suavizadoAgachado = 10f;
 
     CharacterController controller;
     Vector3 velocidadVertical;
@@ -31,6 +39,10 @@ public class PlayerController : MonoBehaviour
 
     Vector3 camaraPosLocalInicial;
     float contadorHeadbob = 0f;
+
+    float alturaOriginal;
+    Vector3 centroOriginal;
+    bool estaAgachado;
 
     void Awake()
     {
@@ -44,6 +56,9 @@ public class PlayerController : MonoBehaviour
 
         if (camara != null)
             camaraPosLocalInicial = camara.localPosition;
+
+        alturaOriginal = controller.height;
+        centroOriginal = controller.center;
     }
 
     void Update()
@@ -61,13 +76,17 @@ public class PlayerController : MonoBehaviour
 
         ActualizarCameraSway(rawMouseX, rawMouseY);
 
+        ActualizarCrouch();
+
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
         Vector3 input = (transform.right * x + transform.forward * z).normalized;
         float intensidadMovimiento = new Vector2(x, z).magnitude;
 
-        controller.Move(input * velocidad * Time.deltaTime);
+        float velocidadActual = estaAgachado ? velocidadAgachado : velocidad;
+        controller.Move(input * velocidadActual * Time.deltaTime);
+
 
         if (controller.isGrounded && velocidadVertical.y < 0)
             velocidadVertical.y = -2f;
@@ -78,12 +97,38 @@ public class PlayerController : MonoBehaviour
         ActualizarHeadbob(intensidadMovimiento);
     }
 
+    void ActualizarCrouch()
+    {
+        if (!permitirAgacharse)
+        {
+            estaAgachado = false;
+            return;
+        }
+
+        bool deseaAgacharse = Input.GetKey(teclaAgacharse);
+        estaAgachado = deseaAgacharse;
+
+        float alturaObjetivo = deseaAgacharse ? alturaAgachado : alturaOriginal;
+        controller.height = Mathf.Lerp(controller.height, alturaObjetivo, Time.deltaTime * suavizadoAgachado);
+
+        float centroYOriginal = centroOriginal.y;
+        float centroYAgachado = alturaAgachado * 0.5f; 
+
+        Vector3 centroActual = controller.center;
+        float centroObjetivoY = deseaAgacharse ? centroYAgachado : centroYOriginal;
+        centroActual.y = Mathf.Lerp(centroActual.y, centroObjetivoY, Time.deltaTime * suavizadoAgachado);
+        controller.center = centroActual;
+    }
+
     void ActualizarHeadbob(float intensidadMovimiento)
     {
         if (!usarHeadbob || camara == null)
             return;
 
         bool enSuelo = controller.isGrounded;
+
+        Vector3 baseCamara = camaraPosLocalInicial +
+                             (estaAgachado ? Vector3.down * offsetCamaraAgachado : Vector3.zero);
 
         if (enSuelo && intensidadMovimiento > 0.1f)
         {
@@ -92,7 +137,7 @@ public class PlayerController : MonoBehaviour
             float bobY = Mathf.Sin(contadorHeadbob) * amplitudPaso;
             float bobX = Mathf.Cos(contadorHeadbob * 0.5f) * amplitudPaso * 0.5f;
 
-            Vector3 objetivo = camaraPosLocalInicial + new Vector3(bobX, bobY, 0f);
+            Vector3 objetivo = baseCamara + new Vector3(bobX, bobY, 0f);
             camara.localPosition = Vector3.Lerp(camara.localPosition, objetivo, Time.deltaTime * suavizadoHeadbob);
         }
         else
@@ -101,21 +146,24 @@ public class PlayerController : MonoBehaviour
 
             float bobY = Mathf.Sin(contadorHeadbob) * amplitudIdle;
 
-            Vector3 objetivo = camaraPosLocalInicial + new Vector3(0f, bobY, 0f);
+            Vector3 objetivo = baseCamara + new Vector3(0f, bobY, 0f);
             camara.localPosition = Vector3.Lerp(camara.localPosition, objetivo, Time.deltaTime * (suavizadoHeadbob * 0.5f));
         }
     }
 
     void ActualizarCameraSway(float rawMouseX, float rawMouseY)
     {
-        if (!usarSway || camara == null)
+        if (camara == null)
+            return;
+
+        if (!usarSway)
         {
             camara.localRotation = Quaternion.Euler(rotacionX, 0f, 0f);
             return;
         }
 
-        float swayX = Mathf.Clamp(-rawMouseY * swayCantidad, -swayMaxAngulo, swayMaxAngulo); 
-        float swayZ = Mathf.Clamp(-rawMouseX * swayCantidad, -swayMaxAngulo, swayMaxAngulo); 
+        float swayX = Mathf.Clamp(-rawMouseY * swayCantidad, -swayMaxAngulo, swayMaxAngulo);
+        float swayZ = Mathf.Clamp(-rawMouseX * swayCantidad, -swayMaxAngulo, swayMaxAngulo);
 
         Quaternion rotBase = Quaternion.Euler(rotacionX, 0f, 0f);
         Quaternion rotSway = Quaternion.Euler(swayX, 0f, swayZ);
