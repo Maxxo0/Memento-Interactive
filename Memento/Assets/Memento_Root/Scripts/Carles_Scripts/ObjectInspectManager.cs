@@ -81,6 +81,7 @@ public class ObjectInspectManager : MonoBehaviour
 
         inspecting = true;
         currentItem = item;
+        currentItem.gameObject.SetActive(false);
 
         if (playerController != null)
             playerController.enabled = false;
@@ -127,6 +128,9 @@ public class ObjectInspectManager : MonoBehaviour
 
         if (currentInstance != null)
             Destroy(currentInstance);
+
+        if (currentItem != null)
+            currentItem.gameObject.SetActive(true);
 
         currentInstance = null;
         currentItem = null;
