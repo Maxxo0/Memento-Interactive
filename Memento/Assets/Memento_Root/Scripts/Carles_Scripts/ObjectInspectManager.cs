@@ -17,6 +17,7 @@ public class ObjectInspectManager : MonoBehaviour
     [Header("Inspección")]
     public float rotationSpeed = 200f;
 
+
     bool inspecting = false;
     GameObject currentInstance;
     InteractableItem currentItem;
@@ -44,7 +45,7 @@ public class ObjectInspectManager : MonoBehaviour
         }
         else
         {
-            RotarObjeto();        
+            RotarObjeto();;
 
             if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(KeyCode.Escape))
             {
@@ -82,6 +83,7 @@ public class ObjectInspectManager : MonoBehaviour
         inspecting = true;
         currentItem = item;
         currentItem.gameObject.SetActive(false);
+
 
         if (playerController != null)
             playerController.enabled = false;
@@ -147,4 +149,5 @@ public class ObjectInspectManager : MonoBehaviour
         currentInstance.transform.Rotate(playerCamera.transform.up, -mouseX * rotationSpeed * Time.deltaTime, Space.World);
         currentInstance.transform.Rotate(playerCamera.transform.right, mouseY * rotationSpeed * Time.deltaTime, Space.World);
     }
+
 }

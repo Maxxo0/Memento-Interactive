@@ -33,6 +33,15 @@ public class PlayerController : MonoBehaviour
     public float offsetCamaraAgachado = 0.5f; 
     public float suavizadoAgachado = 10f;
 
+    [Header("Zoom (modo P.T.)")]
+    public bool usarZoom = true;
+    public KeyCode teclaZoom = KeyCode.Mouse1;  
+    public float fovNormal = 60f;
+    public float fovZoom = 40f;                 
+    public float velocidadZoom = 10f;
+    public float factorSensibilidadZoom = 0.6f;
+    Camera cam;
+
     CharacterController controller;
     Vector3 velocidadVertical;
     float rotacionX = 0f;
@@ -59,10 +68,24 @@ public class PlayerController : MonoBehaviour
 
         alturaOriginal = controller.height;
         centroOriginal = controller.center;
+
+        if (camara != null)
+        {
+            cam = camara.GetComponent<Camera>();
+            if (cam != null)
+                fovNormal = cam.fieldOfView;   
+        }
     }
 
     void Update()
     {
+        bool estaHaciendoZoom = usarZoom && Input.GetKey(teclaZoom);
+
+        float sensibilidadActual = sensibilidadRaton;
+        if (estaHaciendoZoom)
+            sensibilidadActual *= factorSensibilidadZoom;
+
+
         float rawMouseX = Input.GetAxis("Mouse X");
         float rawMouseY = Input.GetAxis("Mouse Y");
 
@@ -77,6 +100,8 @@ public class PlayerController : MonoBehaviour
         ActualizarCameraSway(rawMouseX, rawMouseY);
 
         ActualizarCrouch();
+
+        ActualizarZoom(estaHaciendoZoom);
 
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
@@ -174,6 +199,20 @@ public class PlayerController : MonoBehaviour
             camara.localRotation,
             rotObjetivo,
             Time.deltaTime * swaySuavizado
+        );
+    }
+
+    void ActualizarZoom(bool estaHaciendoZoom)
+    {
+        if (!usarZoom || cam == null)
+            return;
+
+        float objetivoFOV = estaHaciendoZoom ? fovZoom : fovNormal;
+
+        cam.fieldOfView = Mathf.Lerp(
+            cam.fieldOfView,
+            objetivoFOV,
+            Time.deltaTime * velocidadZoom
         );
     }
 }
