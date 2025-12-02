@@ -32,12 +32,6 @@ public class ObjectInspectManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F1) && inspectCanvas != null)
-        {
-            bool newState = !inspectCanvas.activeSelf;
-            inspectCanvas.SetActive(newState);
-            Debug.Log("[Inspect][DEBUG] F1 -> Canvas = " + newState);
-        }
 
         if (!inspecting)
         {

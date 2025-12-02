@@ -611,6 +611,12 @@ MonoBehaviour:
   velocidadAgachado: 3
   offsetCamaraAgachado: 0.5
   suavizadoAgachado: 10
+  usarZoom: 1
+  teclaZoom: 324
+  fovNormal: 60
+  fovZoom: 40
+  velocidadZoom: 10
+  factorSensibilidadZoom: 0.6
 --- !u!143 &936289620
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1386,7 +1392,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7401660042509486194, guid: 1b0f0a898b82c514fb4dd322a9c86a49, type: 3}
       propertyPath: m_Size.x
-      value: 6.4597096
+      value: 5.512919
       objectReference: {fileID: 0}
     - target: {fileID: 7401660042509486194, guid: 1b0f0a898b82c514fb4dd322a9c86a49, type: 3}
       propertyPath: m_Size.y
@@ -1398,7 +1404,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7401660042509486194, guid: 1b0f0a898b82c514fb4dd322a9c86a49, type: 3}
       propertyPath: m_Center.x
-      value: 1.5627675
+      value: 1.089372
       objectReference: {fileID: 0}
     - target: {fileID: 7401660042509486194, guid: 1b0f0a898b82c514fb4dd322a9c86a49, type: 3}
       propertyPath: m_Center.y
