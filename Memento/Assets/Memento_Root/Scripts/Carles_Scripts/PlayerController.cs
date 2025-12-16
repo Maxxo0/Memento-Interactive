@@ -85,7 +85,6 @@ public class PlayerController : MonoBehaviour
         if (estaHaciendoZoom)
             sensibilidadActual *= factorSensibilidadZoom;
 
-
         float rawMouseX = Input.GetAxis("Mouse X");
         float rawMouseY = Input.GetAxis("Mouse Y");
 
@@ -111,7 +110,6 @@ public class PlayerController : MonoBehaviour
 
         float velocidadActual = estaAgachado ? velocidadAgachado : velocidad;
         controller.Move(input * velocidadActual * Time.deltaTime);
-
 
         if (controller.isGrounded && velocidadVertical.y < 0)
             velocidadVertical.y = -2f;

@@ -32,7 +32,6 @@ public class ObjectInspectManager : MonoBehaviour
 
     void Update()
     {
-
         if (!inspecting)
         {
             DetectarInteraccion();  
