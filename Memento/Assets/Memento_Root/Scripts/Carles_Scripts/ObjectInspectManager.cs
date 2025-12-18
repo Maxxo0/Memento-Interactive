@@ -53,14 +53,25 @@ public class ObjectInspectManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayerMask))
         {
-            InteractableItem item = hit.collider.GetComponent<InteractableItem>();
+            InteractableItem item = hit.collider.GetComponentInParent<InteractableItem>();
+            if (item == null) return;
 
-            if (item != null)
+            Vector3 vp = playerCamera.WorldToViewportPoint(hit.point);
+
+            bool enPantalla =
+                vp.z > 0f &&
+                vp.x >= 0f && vp.x <= 1f &&
+                vp.y >= 0f && vp.y <= 1f;
+
+            if (!enPantalla) return;
+            float dx = Mathf.Abs(vp.x - 0.5f);
+            float dy = Mathf.Abs(vp.y - 0.5f);
+
+            if (dx > 0.15f || dy > 0.15f) return;
+
+            if (Input.GetKeyDown(interactKey))
             {
-                if (Input.GetKeyDown(interactKey))
-                {
-                    EmpezarInspeccion(item);
-                }
+                EmpezarInspeccion(item);
             }
         }
     }
