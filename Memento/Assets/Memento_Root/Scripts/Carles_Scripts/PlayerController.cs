@@ -1,12 +1,14 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [HideInInspector] public bool bloquearMovimiento = false;
+
     [Header("Movimiento")]
     public float velocidad = 6f;
     public float gravedad = -9.81f;
 
-    [Header("Rotaci�n FPS")]
+    [Header("Rotación FPS")]
     public float sensibilidadRaton = 300f;
     public Transform camara;          
     public float limiteVertical = 80f;
@@ -88,8 +90,8 @@ public class PlayerController : MonoBehaviour
         float rawMouseX = Input.GetAxis("Mouse X");
         float rawMouseY = Input.GetAxis("Mouse Y");
 
-        float mouseX = rawMouseX * sensibilidadRaton * Time.deltaTime;
-        float mouseY = rawMouseY * sensibilidadRaton * Time.deltaTime;
+        float mouseX = rawMouseX * sensibilidadActual * Time.deltaTime;
+        float mouseY = rawMouseY * sensibilidadActual * Time.deltaTime;
 
         rotacionX -= mouseY;
         rotacionX = Mathf.Clamp(rotacionX, -limiteVertical, limiteVertical);
@@ -97,10 +99,11 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(Vector3.up * mouseX);
 
         ActualizarCameraSway(rawMouseX, rawMouseY);
+        ActualizarZoom(estaHaciendoZoom);
 
         ActualizarCrouch();
-
-        ActualizarZoom(estaHaciendoZoom);
+        if (bloquearMovimiento)
+            return;
 
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
@@ -212,5 +215,14 @@ public class PlayerController : MonoBehaviour
             objetivoFOV,
             Time.deltaTime * velocidadZoom
         );
+    }
+
+    public void ForzarDePie()
+    {
+        estaAgachado = false;
+
+        // “snap” a valores originales para no quedarse a medias por el Lerp
+        controller.height = alturaOriginal;
+        controller.center = centroOriginal;
     }
 }
