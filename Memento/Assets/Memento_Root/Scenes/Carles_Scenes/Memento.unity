@@ -809,7 +809,7 @@ MonoBehaviour:
   inspectAnchor: {fileID: 913289634}
   inspectCanvas: {fileID: 625861881}
   interactKey: 101
-  interactDistance: 3
+  interactDistance: 1.4
   interactLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

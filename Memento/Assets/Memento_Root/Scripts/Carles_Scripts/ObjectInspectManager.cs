@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class ObjectInspectManager : MonoBehaviour
@@ -11,7 +12,7 @@ public class ObjectInspectManager : MonoBehaviour
 
     [Header("Interacción")]
     public KeyCode interactKey = KeyCode.E;
-    public float interactDistance = 3f;
+    public float interactDistance = 1.4f;
     public LayerMask interactLayerMask = ~0;  
 
     [Header("Inspección")]
@@ -27,6 +28,12 @@ public class ObjectInspectManager : MonoBehaviour
     bool inspecting = false;
     GameObject currentInstance;
     InteractableItem currentItem;
+
+    [Header("Hide Transition")]
+    public float duracionTransicion = 0.45f;
+    public AnimationCurve curvaMovimiento = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+    bool enTransicion = false;
 
     void Start()
     {
@@ -92,27 +99,37 @@ public class ObjectInspectManager : MonoBehaviour
                 EmpezarInspeccion(item);
             }
         }*/
+        Vector3 origenHide = playerController.transform.position + Vector3.up * 0.8f;
+        Ray rayHide = new Ray(origenHide, playerController.transform.forward);
+
+        if (Physics.Raycast(
+            rayHide,
+            out RaycastHit hitHide,
+            interactDistance,
+            interactLayerMask,
+            QueryTriggerInteraction.Collide))
+        {
+            HideSpor hideSpot = hitHide.collider.GetComponentInParent<HideSpor>();
+            if (hideSpot != null)
+            {
+                if (Input.GetKeyDown(interactKey))
+                {
+                    EntrarEscondite(hideSpot);
+                }
+                return; 
+            }
+        }
+
+
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayerMask, QueryTriggerInteraction.Collide))
+        if (Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            interactDistance,
+            interactLayerMask,
+            QueryTriggerInteraction.Collide))
         {
-            // 1) ¿Es un hide spot?
-            HideSpor hideSpor = hit.collider.GetComponentInParent<HideSpor>();
-            if (hideSpor != null)
-            {
-                // (Opcional) filtro centro de pantalla para que sea más estricto
-                Vector3 vp = playerCamera.WorldToViewportPoint(hit.point);
-                float dx = Mathf.Abs(vp.x - 0.5f);
-                float dy = Mathf.Abs(vp.y - 0.5f);
-                if (dx > 0.15f || dy > 0.15f) return;
-
-                if (Input.GetKeyDown(interactKey))
-                    EntrarEscondite(hideSpor);
-
-                return; // importante: si es hide, no sigas con item inspect
-            }
-
-            // 2) ¿Es un objeto inspeccionable?
             InteractableItem item = hit.collider.GetComponentInParent<InteractableItem>();
             if (item != null && Input.GetKeyDown(interactKey))
             {
@@ -200,7 +217,7 @@ public class ObjectInspectManager : MonoBehaviour
 
     void EntrarEscondite(HideSpor spot)
     {
-        if (spot == null || spot.puntoEntrar == null || playerController == null)
+        /*if (spot == null || spot.puntoEntrar == null || playerController == null)
             return;
 
         isHidden = true;
@@ -218,12 +235,15 @@ public class ObjectInspectManager : MonoBehaviour
         if (playerCC != null) playerCC.enabled = true;
 
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        Cursor.visible = false;*/
+        if (spot == null || enTransicion) return;
+
+        StartCoroutine(EntrarEsconditeSuave(spot));
     }
 
     void SalirEscondite()
     {
-        if (currentHideSpot == null || playerController == null)
+        /*if (currentHideSpot == null || playerController == null)
             return;
 
         if (playerCC != null) playerCC.enabled = false;
@@ -243,7 +263,98 @@ public class ObjectInspectManager : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        playerController.ForzarDePie();
+        playerController.ForzarDePie();*/
+        if (currentHideSpot == null || enTransicion) return;
+
+        StartCoroutine(SalirEsconditeSuave());
     }
 
+    IEnumerator EntrarEsconditeSuave(HideSpor spot)
+    {
+        enTransicion = true;
+        isHidden = true;
+        currentHideSpot = spot;
+
+        playerController.bloquearMovimiento = true;
+
+        if (playerCC != null)
+            playerCC.enabled = false;
+
+        Transform target = spot.puntoEntrar;
+
+        Vector3 posInicial = playerController.transform.position;
+        Quaternion rotInicial = playerController.transform.rotation;
+
+        Vector3 posFinal = target.position;
+        Quaternion rotFinal = target.rotation;
+
+        float t = 0f;
+        while (t < duracionTransicion)
+        {
+            t += Time.deltaTime;
+            float n = Mathf.Clamp01(t / duracionTransicion);
+            float k = curvaMovimiento.Evaluate(n);
+
+            playerController.transform.position =
+                Vector3.Lerp(posInicial, posFinal, k);
+
+            playerController.transform.rotation =
+                Quaternion.Slerp(rotInicial, rotFinal, k);
+
+            yield return null;
+        }
+
+        playerController.transform.SetPositionAndRotation(posFinal, rotFinal);
+
+        if (playerCC != null)
+            playerCC.enabled = true;
+
+        enTransicion = false;
+    }
+
+    IEnumerator SalirEsconditeSuave()
+    {
+        enTransicion = true;
+
+        if (playerCC != null)
+            playerCC.enabled = false;
+
+        Transform target = currentHideSpot.puntoSalir != null
+            ? currentHideSpot.puntoSalir
+            : currentHideSpot.puntoEntrar;
+
+        Vector3 posInicial = playerController.transform.position;
+        Quaternion rotInicial = playerController.transform.rotation;
+
+        Vector3 posFinal = target.position;
+        Quaternion rotFinal = target.rotation;
+
+        float t = 0f;
+        while (t < duracionTransicion)
+        {
+            t += Time.deltaTime;
+            float n = Mathf.Clamp01(t / duracionTransicion);
+            float k = curvaMovimiento.Evaluate(n);
+
+            playerController.transform.position =
+                Vector3.Lerp(posInicial, posFinal, k);
+
+            playerController.transform.rotation =
+                Quaternion.Slerp(rotInicial, rotFinal, k);
+
+            yield return null;
+        }
+
+        playerController.transform.SetPositionAndRotation(posFinal, rotFinal);
+
+        if (playerCC != null)
+            playerCC.enabled = true;
+
+        playerController.bloquearMovimiento = false;
+        playerController.ForzarDePie();
+        isHidden = false;
+        currentHideSpot = null;
+
+        enTransicion = false;
+    }
 }

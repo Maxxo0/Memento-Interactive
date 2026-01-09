@@ -220,8 +220,6 @@ public class PlayerController : MonoBehaviour
     public void ForzarDePie()
     {
         estaAgachado = false;
-
-        // “snap” a valores originales para no quedarse a medias por el Lerp
         controller.height = alturaOriginal;
         controller.center = centroOriginal;
     }
