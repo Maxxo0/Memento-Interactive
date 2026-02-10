@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ObjectInspectManager : MonoBehaviour
 {
@@ -13,7 +14,12 @@ public class ObjectInspectManager : MonoBehaviour
     [Header("Interacción")]
     public KeyCode interactKey = KeyCode.E;
     public float interactDistance = 1.4f;
-    public LayerMask interactLayerMask = ~0;  
+    public LayerMask interactLayerMask = ~0;
+
+    [Header("UI Prompt")]
+    public GameObject promptGO;  
+    public TMP_Text promptText;       
+    public string textoAgacharse = "Agacharse";
 
     [Header("Inspección")]
     public float rotationSpeed = 200f;
@@ -38,11 +44,10 @@ public class ObjectInspectManager : MonoBehaviour
     void Start()
     {
         if (inspectCanvas != null)
-        {
             inspectCanvas.SetActive(false);
-        }
-        if (inspectCanvas != null) inspectCanvas.SetActive(false);
 
+        if (promptGO != null)
+            promptGO.SetActive(false);
         if (playerController != null)
             playerCC = playerController.GetComponent<CharacterController>();
     }
@@ -99,42 +104,47 @@ public class ObjectInspectManager : MonoBehaviour
                 EmpezarInspeccion(item);
             }
         }*/
+
+        if (isHidden || enTransicion)
+        {
+            if (promptGO != null) promptGO.SetActive(false);
+            return;
+        }
+        bool mostrarPrompt = false;
+
         Vector3 origenHide = playerController.transform.position + Vector3.up * 0.8f;
         Ray rayHide = new Ray(origenHide, playerController.transform.forward);
 
-        if (Physics.Raycast(
-            rayHide,
-            out RaycastHit hitHide,
-            interactDistance,
-            interactLayerMask,
-            QueryTriggerInteraction.Collide))
+        if (Physics.Raycast(rayHide, out RaycastHit hitHide, interactDistance, interactLayerMask, QueryTriggerInteraction.Collide))
         {
             HideSpor hideSpot = hitHide.collider.GetComponentInParent<HideSpor>();
             if (hideSpot != null)
             {
+
+                mostrarPrompt = true;
+
                 if (Input.GetKeyDown(interactKey))
                 {
+
                     EntrarEscondite(hideSpot);
+                    return;
                 }
-                return; 
             }
         }
 
+        if (promptGO != null)
+            promptGO.SetActive(mostrarPrompt);
+
+        if (mostrarPrompt && promptText != null)
+            promptText.text = textoAgacharse;
 
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        if (Physics.Raycast(
-            ray,
-            out RaycastHit hit,
-            interactDistance,
-            interactLayerMask,
-            QueryTriggerInteraction.Collide))
+        if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayerMask, QueryTriggerInteraction.Collide))
         {
             InteractableItem item = hit.collider.GetComponentInParent<InteractableItem>();
             if (item != null && Input.GetKeyDown(interactKey))
-            {
                 EmpezarInspeccion(item);
-            }
         }
     }
 
@@ -239,6 +249,7 @@ public class ObjectInspectManager : MonoBehaviour
         if (spot == null || enTransicion) return;
 
         StartCoroutine(EntrarEsconditeSuave(spot));
+        if (promptGO != null) promptGO.SetActive(false);
     }
 
     void SalirEscondite()
@@ -267,6 +278,7 @@ public class ObjectInspectManager : MonoBehaviour
         if (currentHideSpot == null || enTransicion) return;
 
         StartCoroutine(SalirEsconditeSuave());
+        if (promptGO != null) promptGO.SetActive(false);
     }
 
     IEnumerator EntrarEsconditeSuave(HideSpor spot)
