@@ -27,8 +27,12 @@ public class SanityController : MonoBehaviour
     [Header("Drenaje base")]
     public float drenajeBase = 0.0017f;
 
-    int zonasDeLuzDentro = 0;
+    [Header("Curva de amenaza")]
+    [Tooltip("Más alto = sube MUY rápido al estar cerca (2-4 suele ir bien).")]
+    public float exponenteAmenaza = 3f;
 
+    int zonasDeLuzDentro = 0;
+    SanityLight luzActual;
 
     DepthOfField dof;
     Vignette vignette;
@@ -82,6 +86,12 @@ public class SanityController : MonoBehaviour
         intensidadActual = Mathf.Lerp(intensidadActual, objetivo, Time.deltaTime * suavizadoEfecto);
 
         AplicarPostProcesado(intensidadActual);
+
+        if (luzActual != null)
+        {
+            float curado = luzActual.Curar(Time.deltaTime);
+            cordura = Mathf.Clamp01(cordura + curado);
+        }
     }
 
     float CalcularAmenazaEnemigo()
@@ -100,9 +110,12 @@ public class SanityController : MonoBehaviour
 
         if (minDist > distanciaPeligro) return 0f;
 
-
         float t = Mathf.InverseLerp(distanciaPeligro, distanciaMax, minDist);
-        return Mathf.Clamp01(t);
+        t = Mathf.Clamp01(t);
+
+        t = Mathf.Pow(t, exponenteAmenaza);
+
+        return t;
     }
 
     void AplicarPostProcesado(float t)
@@ -142,12 +155,23 @@ public class SanityController : MonoBehaviour
     {
         if (other.GetComponent<LightZone>() != null)
             zonasDeLuzDentro++;
+
+        SanityLight luz = other.GetComponentInParent<SanityLight>();
+        if (luz != null)
+        {
+            luzActual = luz;
+        }
     }
 
     void OnTriggerExit(Collider other)
     {
         if (other.GetComponent<LightZone>() != null)
             zonasDeLuzDentro = Mathf.Max(0, zonasDeLuzDentro - 1);
+        SanityLight luz = other.GetComponentInParent<SanityLight>();
+        if (luz != null && luz == luzActual)
+        {
+            luzActual = null;
+        }
     }
     public void RecuperarCordura(float cantidad)
     {

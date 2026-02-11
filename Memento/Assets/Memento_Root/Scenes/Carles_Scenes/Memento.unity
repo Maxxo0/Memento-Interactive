@@ -845,12 +845,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 576165232}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5944d979101484a409413384e7324763, type: 3}
+  m_Script: {fileID: 11500000, guid: c6dc657d98884684489a2dfa435a1878, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LightRecharge
-  cargaTotal: 0.35
-  curacionPorSegundo: 0.15
-  seConsume: 1
+  m_EditorClassIdentifier: Assembly-CSharp::SanityLightTrigger
 --- !u!1 &625861881
 GameObject:
   m_ObjectHideFlags: 0
@@ -1099,7 +1096,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 3079457b8673d6844bb0db2080460c33, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10.813812
+      value: 17.39
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3079457b8673d6844bb0db2080460c33, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1144,7 +1141,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3079457b8673d6844bb0db2080460c33, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1164035783}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3079457b8673d6844bb0db2080460c33, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1164035784}
   m_SourcePrefab: {fileID: 100100000, guid: 3079457b8673d6844bb0db2080460c33, type: 3}
 --- !u!4 &891380519 stripped
 Transform:
@@ -1439,6 +1442,7 @@ MonoBehaviour:
   distanciaMax: 2.5
   suavizadoEfecto: 8
   drenajeBase: 0.0017
+  exponenteAmenaza: 3
 --- !u!1 &1060635451
 GameObject:
   m_ObjectHideFlags: 0
@@ -1612,6 +1616,48 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1.8546025, z: 1}
   m_Center: {x: 0, y: -1.4606272, z: 0}
+--- !u!1 &1164035782 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3079457b8673d6844bb0db2080460c33, type: 3}
+  m_PrefabInstance: {fileID: 891380518}
+  m_PrefabAsset: {fileID: 0}
+--- !u!136 &1164035783
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1164035782}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 8
+  m_Height: 4.604604
+  m_Direction: 1
+  m_Center: {x: 0.06935978, y: 1.8023019, z: 0}
+--- !u!114 &1164035784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1164035782}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56a7c5ffc4189a541883949339596bc7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SanityDrainEnemy
+  drenajePorSegundo: 0.08
+  suavizadoEntrada: 10
 --- !u!1 &1299694326
 GameObject:
   m_ObjectHideFlags: 0
@@ -1675,12 +1721,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1299694326}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5944d979101484a409413384e7324763, type: 3}
+  m_Script: {fileID: 11500000, guid: c6dc657d98884684489a2dfa435a1878, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LightRecharge
-  cargaTotal: 0.35
-  curacionPorSegundo: 0.15
-  seConsume: 1
+  m_EditorClassIdentifier: Assembly-CSharp::SanityLightTrigger
 --- !u!1 &1423412406
 GameObject:
   m_ObjectHideFlags: 0
@@ -1838,6 +1881,7 @@ GameObject:
   - component: {fileID: 1537179934}
   - component: {fileID: 1537179936}
   - component: {fileID: 1537179935}
+  - component: {fileID: 1537179937}
   m_Layer: 0
   m_Name: Light1
   m_TagString: Untagged
@@ -2044,6 +2088,20 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &1537179937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1537179929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33c5b654810f434db7746bdb9f81eaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SanityLight
+  corduraDisponible: 0.3
+  velocidadCuracion: 0.05
 --- !u!1 &1630261914
 GameObject:
   m_ObjectHideFlags: 0
@@ -2429,6 +2487,7 @@ GameObject:
   - component: {fileID: 1711503517}
   - component: {fileID: 1711503519}
   - component: {fileID: 1711503518}
+  - component: {fileID: 1711503520}
   m_Layer: 0
   m_Name: Light2
   m_TagString: Untagged
@@ -2635,6 +2694,20 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &1711503520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1711503512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33c5b654810f434db7746bdb9f81eaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SanityLight
+  corduraDisponible: 0.3
+  velocidadCuracion: 0.05
 --- !u!1 &1893098735
 GameObject:
   m_ObjectHideFlags: 0
