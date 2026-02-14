@@ -10,6 +10,7 @@ public class SanityController : MonoBehaviour
     public Transform[] enemigos;             
 
     [Header("Cordura (0 = mal, 1 = bien)")]
+    [SerializeField] bool resetCorduraAlIniciar = true;
     [Range(0f, 1f)] public float cordura = 1f;
 
     [Header("Ritmos")]
@@ -31,6 +32,10 @@ public class SanityController : MonoBehaviour
     [Tooltip("Más alto = sube MUY rápido al estar cerca (2-4 suele ir bien).")]
     public float exponenteAmenaza = 3f;
 
+    [Header("Umbral de pánico (efectos fuertes)")]
+    [Range(0f, 1f)] public float umbralPanico = 0.4f;
+    public float potenciaPanico = 2.5f;               
+
     int zonasDeLuzDentro = 0;
     SanityLight luzActual;
 
@@ -43,6 +48,9 @@ public class SanityController : MonoBehaviour
 
     void Awake()
     {
+        if (resetCorduraAlIniciar)
+            cordura = 1f;
+
         if (player == null) player = transform;
 
         if (globalVolume == null)
@@ -120,34 +128,58 @@ public class SanityController : MonoBehaviour
 
     void AplicarPostProcesado(float t)
     {
+        const float umbral = 0.45f;
+
+        float corduraActual = 1f - t;               
+        float low = Mathf.InverseLerp(umbral, 0f, corduraActual);
+        low = Mathf.Clamp01(low);
+        low = Mathf.Pow(low, 2.5f);
+
         if (dof != null)
         {
-            dof.active = true;
+            // Si cordura >= 0.4 -> NADA de borroso
+            if (corduraActual >= umbral)
+            {
+                dof.active = false;               
+                dof.gaussianMaxRadius.value = 0f;   
+            }
+            else
+            {
+                dof.active = true;
+                dof.mode.value = DepthOfFieldMode.Gaussian;
 
-            dof.mode.value = DepthOfFieldMode.Gaussian;
-
-            dof.gaussianStart.value = Mathf.Lerp(2.5f, 0.4f, t);
-            dof.gaussianEnd.value = Mathf.Lerp(6.0f, 1.2f, t);
-            dof.gaussianMaxRadius.value = Mathf.Lerp(0.2f, 1.2f, t);
+                dof.gaussianStart.value = Mathf.Lerp(2.5f, 0.4f, low);
+                dof.gaussianEnd.value = Mathf.Lerp(6.0f, 1.2f, low);
+                dof.gaussianMaxRadius.value = Mathf.Lerp(0.0f, 1.2f, low); 
+            }
         }
 
         if (vignette != null)
         {
-            vignette.active = true;
-            vignette.intensity.value = Mathf.Lerp(0.15f, 0.55f, t);
-            vignette.smoothness.value = Mathf.Lerp(0.25f, 0.6f, t);
+            if (corduraActual >= umbral)
+            {
+                vignette.intensity.value = 0f;
+            }
+            else
+            {
+                vignette.active = true;
+                vignette.intensity.value = Mathf.Lerp(0.0f, 0.55f, low);
+                vignette.smoothness.value = Mathf.Lerp(0.25f, 0.6f, low);
+                vignette.color.value = Color.Lerp(Color.black, new Color(0.6f, 0.05f, 0.05f, 1f), low);
+            }
         }
 
+    
         if (chroma != null)
         {
             chroma.active = true;
-            chroma.intensity.value = Mathf.Lerp(0.05f, 0.35f, t);
+            chroma.intensity.value = Mathf.Lerp(0.0f, 0.35f, low); 
         }
 
         if (grain != null)
         {
             grain.active = true;
-            grain.intensity.value = Mathf.Lerp(0.0f, 0.35f, t);
+            grain.intensity.value = Mathf.Lerp(0.0f, 0.35f, low); 
         }
     }
 
