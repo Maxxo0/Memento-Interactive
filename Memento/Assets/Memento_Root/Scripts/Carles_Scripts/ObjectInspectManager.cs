@@ -39,6 +39,17 @@ public class ObjectInspectManager : MonoBehaviour
     public float duracionTransicion = 0.45f;
     public AnimationCurve curvaMovimiento = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
+    [Header("Inventario")]
+    public InventorySystem inventory;
+
+    [Header("UI Inspección")]
+    public GameObject pickupHintGO; 
+    public TMP_Text pickupHintText;
+    public TMP_Text textoCerrar;
+    public TMP_Text textoGuardar;
+    public GameObject guardarGO; // el objeto del texto Guardar (para ocultarlo)
+    public KeyCode guardarKey = KeyCode.F; 
+
     bool enTransicion = false;
 
     void Start()
@@ -50,6 +61,8 @@ public class ObjectInspectManager : MonoBehaviour
             promptGO.SetActive(false);
         if (playerController != null)
             playerCC = playerController.GetComponent<CharacterController>();
+
+        if (pickupHintGO != null) pickupHintGO.SetActive(false);
     }
 
     void Update()
@@ -73,37 +86,18 @@ public class ObjectInspectManager : MonoBehaviour
             {
                 TerminarInspeccion(); 
             }
+
+            if (Input.GetKeyDown(guardarKey))
+            {
+                GuardarItemActual();
+                return;
+            }
+
         }
     }
 
     void DetectarInteraccion()
     {
-        /*Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-
-        if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayerMask))
-        {
-
-            InteractableItem item = hit.collider.GetComponentInParent<InteractableItem>();
-            if (item == null) return;
-
-            Vector3 vp = playerCamera.WorldToViewportPoint(hit.point);
-
-            bool enPantalla =
-                vp.z > 0f &&
-                vp.x >= 0f && vp.x <= 1f &&
-                vp.y >= 0f && vp.y <= 1f;
-
-            if (!enPantalla) return;
-            float dx = Mathf.Abs(vp.x - 0.5f);
-            float dy = Mathf.Abs(vp.y - 0.5f);
-
-            if (dx > 0.15f || dy > 0.15f) return;
-
-            if (Input.GetKeyDown(interactKey))
-            {
-                EmpezarInspeccion(item);
-            }
-        }*/
 
         if (isHidden || enTransicion)
         {
@@ -170,6 +164,25 @@ public class ObjectInspectManager : MonoBehaviour
             inspectCanvas.SetActive(true);
         }
 
+        if (textoCerrar != null)
+            textoCerrar.text = "Cerrar (E / Esc)";
+
+        bool puedeGuardar = item != null && item.itemData != null;
+
+        if (guardarGO != null)
+            guardarGO.SetActive(puedeGuardar);
+
+        if (puedeGuardar && textoGuardar != null)
+            textoGuardar.text = $"Guardar ({guardarKey})";
+
+        bool canStore = item != null && item.canPickup && item.itemData != null;
+
+        if (pickupHintGO != null)
+            pickupHintGO.SetActive(canStore);
+
+        if (canStore && pickupHintText != null)
+            pickupHintText.text = $"Guardar ({guardarKey})";
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
@@ -227,25 +240,7 @@ public class ObjectInspectManager : MonoBehaviour
 
     void EntrarEscondite(HideSpor spot)
     {
-        /*if (spot == null || spot.puntoEntrar == null || playerController == null)
-            return;
-
-        isHidden = true;
-        currentHideSpot = spot;
-
-        if (spot.bloquearMovimiento && playerController != null)
-            playerController.bloquearMovimiento = true;
-
-
-        if (playerCC != null) playerCC.enabled = false;
-
-        Transform p = spot.puntoEntrar;
-        playerController.transform.SetPositionAndRotation(p.position, p.rotation);
-
-        if (playerCC != null) playerCC.enabled = true;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;*/
+       
         if (spot == null || enTransicion) return;
 
         StartCoroutine(EntrarEsconditeSuave(spot));
@@ -254,27 +249,7 @@ public class ObjectInspectManager : MonoBehaviour
 
     void SalirEscondite()
     {
-        /*if (currentHideSpot == null || playerController == null)
-            return;
-
-        if (playerCC != null) playerCC.enabled = false;
-
-        Transform p = currentHideSpot.puntoSalir != null ? currentHideSpot.puntoSalir : currentHideSpot.puntoEntrar;
-        playerController.transform.SetPositionAndRotation(p.position, p.rotation);
-
-        if (playerCC != null) playerCC.enabled = true;
-
-        playerController.bloquearMovimiento = false;
-
-        if (currentHideSpot.bloquearMovimiento && playerController != null)
-            playerController.enabled = true;
-
-        isHidden = false;
-        currentHideSpot = null;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        playerController.ForzarDePie();*/
+        
         if (currentHideSpot == null || enTransicion) return;
 
         StartCoroutine(SalirEsconditeSuave());
@@ -368,5 +343,39 @@ public class ObjectInspectManager : MonoBehaviour
         currentHideSpot = null;
 
         enTransicion = false;
+    }
+
+    void GuardarItemActual()
+    {
+        if (currentItem == null || inventory == null) return;
+        if (!currentItem.canPickup || currentItem.itemData == null) return;
+
+        bool ok = inventory.AddItem(currentItem.itemData);
+        if (!ok)
+        {
+            Debug.Log("Inventario lleno");
+            return;
+        }
+
+        Destroy(currentItem.gameObject);
+        inspecting = false;
+
+        if (playerController != null)
+            playerController.enabled = true;
+
+        if (inspectCanvas != null)
+            inspectCanvas.SetActive(false);
+
+        if (pickupHintGO != null)
+            pickupHintGO.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (currentInstance != null)
+            Destroy(currentInstance);
+
+        currentInstance = null;
+        currentItem = null;
     }
 }
