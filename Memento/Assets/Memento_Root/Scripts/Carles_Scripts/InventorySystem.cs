@@ -39,6 +39,9 @@ public class InventorySystem : MonoBehaviour
             if (arr[i] == null)
             {
                 arr[i] = item;
+
+                Debug.Log($"Añadido {item.name} en índice {i} ({item.type})");
+
                 RefreshUI();
                 return true;
             }
@@ -46,6 +49,7 @@ public class InventorySystem : MonoBehaviour
 
         Debug.Log("Inventario lleno");
         return false;
+
     }
 
     void RefreshUI()
@@ -67,7 +71,7 @@ public class InventorySystem : MonoBehaviour
         }
     }
 
-    [Header("DEBUG")]
+    /*[Header("DEBUG")]
     public ItemData testDynamic;
     public ItemData testKey;
 
@@ -78,5 +82,5 @@ public class InventorySystem : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
             AddItem(testKey);
-    }
+    }*/
 }

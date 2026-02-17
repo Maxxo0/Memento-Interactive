@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class InteractableItem : MonoBehaviour
 {
+    public enum ItemType
+    {
+        Dynamic,
+        Key
+    }
+
+    [Header("Tipo de Item")]
+    public ItemType itemType;
     [Header("Modelo a inspeccionar")]
     public GameObject inspectPrefab;
 

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66457e0ada505ea42b0099ec6e534676, type: 3}
   m_Name: TestDynamic
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  inventoryPrefab3D: {fileID: 0}
   itemId: TestDynamic
   type: 0
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 21300000, guid: ca43652c0ed74f549b7ae4ec7dfc1a02, type: 3}

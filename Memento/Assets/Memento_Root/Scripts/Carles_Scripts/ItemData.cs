@@ -7,6 +7,6 @@ public class ItemData : ScriptableObject
 {
     public GameObject inventoryPrefab3D; // modelo para mostrar en inventario
     public string itemId;
-    public ItemType type;
+    public ItemType type; // Dynamic / Key
     public Sprite icon;
 }

@@ -47,7 +47,7 @@ public class ObjectInspectManager : MonoBehaviour
     public TMP_Text pickupHintText;
     public TMP_Text textoCerrar;
     public TMP_Text textoGuardar;
-    public GameObject guardarGO; // el objeto del texto Guardar (para ocultarlo)
+    public GameObject guardarGO;
     public KeyCode guardarKey = KeyCode.F; 
 
     bool enTransicion = false;
@@ -82,17 +82,36 @@ public class ObjectInspectManager : MonoBehaviour
         {
             RotarObjeto();;
 
-            if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(KeyCode.Escape))
-            {
-                TerminarInspeccion(); 
-            }
-
+            // GUARDAR EN INVENTARIO
             if (Input.GetKeyDown(guardarKey))
             {
-                GuardarItemActual();
+                GuardarEnInventario();
                 return;
             }
 
+            if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(KeyCode.Escape))
+            {
+                TerminarInspeccion();
+            }
+
+        }
+
+        if (inspecting && currentItem != null && Input.GetKeyDown(KeyCode.F))
+        {
+            if (inventory != null && currentItem.itemData != null)
+            {
+                bool ok = inventory.AddItem(currentItem.itemData);
+
+                if (ok)
+                {
+                    Destroy(currentItem.gameObject); 
+                    TerminarInspeccion();
+                }
+                else
+                {
+                    Debug.Log("Inventario lleno");
+                }
+            }
         }
     }
 
@@ -377,5 +396,33 @@ public class ObjectInspectManager : MonoBehaviour
 
         currentInstance = null;
         currentItem = null;
+    }
+
+    void GuardarEnInventario()
+    {
+        if (inventory == null || currentItem == null)
+        {
+            Debug.LogWarning("[Inspect] Falta Inventory o currentItem.");
+            return;
+        }
+
+        if (currentItem.itemData == null)
+        {
+            Debug.LogWarning("[Inspect] Este objeto no tiene ItemData asignado.");
+            return;
+        }
+
+        bool ok = inventory.AddItem(currentItem.itemData);
+        if (!ok)
+        {
+            Debug.Log("Inventario lleno, no se puede guardar.");
+            return;
+        }
+
+        GameObject worldGO = currentItem.gameObject;
+
+        TerminarInspeccion();
+
+        Destroy(worldGO);
     }
 }
