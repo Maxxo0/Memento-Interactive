@@ -1203,8 +1203,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 479297e62bad10844bbef11666cbb3e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryToggle
-  inventoryRoot: {fileID: 989172186}
+  inventoryRoot: {fileID: 0}
   toggleKey: 105
+  inventorySystem: {fileID: 0}
+  canvasGroup: {fileID: 0}
+  player: {fileID: 0}
+  fadeDuration: 0.25
+  pauseGame: 0
 --- !u!1 &312636753
 GameObject:
   m_ObjectHideFlags: 0
@@ -2872,6 +2877,33 @@ MonoBehaviour:
   fovZoom: 40
   velocidadZoom: 10
   factorSensibilidadZoom: 0.6
+  impactoDistancia: 0.08
+  impactoDuracion: 0.25
+  curvaImpacto:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  bloquearCamara: 0
 --- !u!143 &936289620
 CharacterController:
   m_ObjectHideFlags: 0
@@ -3024,8 +3056,6 @@ MonoBehaviour:
   - {fileID: 1992773202}
   - {fileID: 1837512605}
   - {fileID: 2006687029}
-  testDynamic: {fileID: 11400000, guid: fee1b3bcaec975b419618ce2c691de76, type: 2}
-  testKey: {fileID: 11400000, guid: ef5e12ab03fda9b45894e9998f7ec8ca, type: 2}
 --- !u!4 &957204898
 Transform:
   m_ObjectHideFlags: 0
@@ -3052,6 +3082,7 @@ GameObject:
   - component: {fileID: 963289344}
   - component: {fileID: 963289346}
   - component: {fileID: 963289345}
+  - component: {fileID: 963289347}
   m_Layer: 5
   m_Name: BlackInventary
   m_TagString: Untagged
@@ -3120,6 +3151,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963289343}
   m_CullTransparentMesh: 1
+--- !u!225 &963289347
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963289343}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &989172186
 GameObject:
   m_ObjectHideFlags: 0

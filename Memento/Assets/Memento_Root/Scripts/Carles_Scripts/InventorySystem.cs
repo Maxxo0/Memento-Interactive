@@ -24,6 +24,7 @@ public class InventorySystem : MonoBehaviour
 
     public bool AddItem(ItemData item)
     {
+        Debug.Log($"[InventorySystem] AddItem en instancia: {name} | ID: {GetInstanceID()}");
         if (item == null) return false;
 
         if (item.type == ItemType.Dynamic)
@@ -52,7 +53,7 @@ public class InventorySystem : MonoBehaviour
 
     }
 
-    void RefreshUI()
+    public void RefreshUI()
     {
         for (int i = 0; i < dynamicSlotsUI.Count; i++)
         {
@@ -83,4 +84,9 @@ public class InventorySystem : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha2))
             AddItem(testKey);
     }*/
+
+    public void ForceRefreshUI()
+    {
+        RefreshUI();
+    }
 }

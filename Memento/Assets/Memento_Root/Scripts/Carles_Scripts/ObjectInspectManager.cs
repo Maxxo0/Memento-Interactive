@@ -76,41 +76,23 @@ public class ObjectInspectManager : MonoBehaviour
 
         if (!inspecting)
         {
-            DetectarInteraccion();  
+            DetectarInteraccion();
         }
         else
         {
-            RotarObjeto();;
+            RotarObjeto();
 
-            // GUARDAR EN INVENTARIO
+            // GUARDAR EN INVENTARIO (solo este bloque)
             if (Input.GetKeyDown(guardarKey))
             {
                 GuardarEnInventario();
                 return;
             }
 
+            // Cerrar inspección
             if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(KeyCode.Escape))
             {
                 TerminarInspeccion();
-            }
-
-        }
-
-        if (inspecting && currentItem != null && Input.GetKeyDown(KeyCode.F))
-        {
-            if (inventory != null && currentItem.itemData != null)
-            {
-                bool ok = inventory.AddItem(currentItem.itemData);
-
-                if (ok)
-                {
-                    Destroy(currentItem.gameObject); 
-                    TerminarInspeccion();
-                }
-                else
-                {
-                    Debug.Log("Inventario lleno");
-                }
             }
         }
     }
@@ -169,13 +151,22 @@ public class ObjectInspectManager : MonoBehaviour
             return;
         }
 
+
         inspecting = true;
         currentItem = item;
         currentItem.gameObject.SetActive(false);
 
 
         if (playerController != null)
-            playerController.enabled = false;
+        {
+            playerController.bloquearMovimiento = true;
+            playerController.bloquearCamara = true;   
+
+            playerController.usarHeadbob = false;
+            playerController.usarSway = false;
+            playerController.usarZoom = false;
+        }
+
 
         if (inspectCanvas != null)
         {
@@ -225,7 +216,14 @@ public class ObjectInspectManager : MonoBehaviour
         inspecting = false;
 
         if (playerController != null)
-            playerController.enabled = true;
+        {
+            playerController.bloquearMovimiento = false;
+            playerController.bloquearCamara = false;
+
+            playerController.usarHeadbob = true;
+            playerController.usarSway = true;
+            playerController.usarZoom = true; 
+        }
 
         if (inspectCanvas != null)
         {

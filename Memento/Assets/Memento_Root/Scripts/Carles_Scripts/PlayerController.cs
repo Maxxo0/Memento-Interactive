@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
@@ -44,6 +45,18 @@ public class PlayerController : MonoBehaviour
     public float factorSensibilidadZoom = 0.6f;
     Camera cam;
 
+    [Header("Mini Impacto Recoger Objeto")]
+    public float impactoDistancia = 0.08f;
+    public float impactoDuracion = 0.25f;
+    public AnimationCurve curvaImpacto = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+    bool enImpacto = false;
+
+    bool enInspeccion = false;
+    Vector3 camLocalPosOriginal;
+    Quaternion camLocalRotOriginal;
+    float fovOriginal;
+
     CharacterController controller;
     Vector3 velocidadVertical;
     float rotacionX = 0f;
@@ -54,6 +67,8 @@ public class PlayerController : MonoBehaviour
     float alturaOriginal;
     Vector3 centroOriginal;
     bool estaAgachado;
+
+    [HideInInspector] public bool bloquearCamara = false;
 
     void Awake()
     {
@@ -77,34 +92,55 @@ public class PlayerController : MonoBehaviour
             if (cam != null)
                 fovNormal = cam.fieldOfView;   
         }
+        if (camara != null)
+        {
+            camLocalPosOriginal = camara.localPosition;
+            camLocalRotOriginal = camara.localRotation;
+
+            cam = camara.GetComponent<Camera>();
+            if (cam != null)
+            {
+                fovOriginal = cam.fieldOfView;
+                fovNormal = cam.fieldOfView; 
+            }
+        }
     }
 
     void Update()
     {
-        bool estaHaciendoZoom = usarZoom && Input.GetKey(teclaZoom);
+        if (!bloquearCamara)
+        {
+            bool estaHaciendoZoom = usarZoom && Input.GetKey(teclaZoom);
 
-        float sensibilidadActual = sensibilidadRaton;
-        if (estaHaciendoZoom)
-            sensibilidadActual *= factorSensibilidadZoom;
+            float sensibilidadActual = sensibilidadRaton;
+            if (estaHaciendoZoom)
+                sensibilidadActual *= factorSensibilidadZoom;
 
-        float rawMouseX = Input.GetAxis("Mouse X");
-        float rawMouseY = Input.GetAxis("Mouse Y");
+            float rawMouseX = Input.GetAxis("Mouse X");
+            float rawMouseY = Input.GetAxis("Mouse Y");
 
-        float mouseX = rawMouseX * sensibilidadActual * Time.deltaTime;
-        float mouseY = rawMouseY * sensibilidadActual * Time.deltaTime;
+            float mouseX = rawMouseX * sensibilidadActual * Time.deltaTime;
+            float mouseY = rawMouseY * sensibilidadActual * Time.deltaTime;
 
-        rotacionX -= mouseY;
-        rotacionX = Mathf.Clamp(rotacionX, -limiteVertical, limiteVertical);
+            rotacionX -= mouseY;
+            rotacionX = Mathf.Clamp(rotacionX, -limiteVertical, limiteVertical);
 
-        transform.Rotate(Vector3.up * mouseX);
+            transform.Rotate(Vector3.up * mouseX);
 
-        ActualizarCameraSway(rawMouseX, rawMouseY);
-        ActualizarZoom(estaHaciendoZoom);
+            ActualizarCameraSway(rawMouseX, rawMouseY);
+            ActualizarZoom(estaHaciendoZoom);
+        }
 
-        ActualizarCrouch();
+        // -------- CROUCH --------
+        // En inspección normalmente lo bloqueamos también.
+        if (!bloquearMovimiento)
+            ActualizarCrouch();
+
+        // -------- BLOQUEO DE MOVIMIENTO (inspección / UI) --------
         if (bloquearMovimiento)
             return;
 
+        // -------- MOVIMIENTO --------
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
@@ -121,7 +157,9 @@ public class PlayerController : MonoBehaviour
         controller.Move(velocidadVertical * Time.deltaTime);
 
         ActualizarHeadbob(intensidadMovimiento);
+
     }
+
 
     void ActualizarCrouch()
     {
@@ -223,4 +261,17 @@ public class PlayerController : MonoBehaviour
         controller.height = alturaOriginal;
         controller.center = centroOriginal;
     }
+
+    public void ActivarInspeccion(bool activar)
+    {
+        enInspeccion = activar;
+
+        if (activar && camara != null)
+        {
+            camLocalPosOriginal = camara.localPosition;
+            camLocalRotOriginal = camara.localRotation;
+            if (cam != null) fovOriginal = cam.fieldOfView;
+        }
+    }
+
 }
