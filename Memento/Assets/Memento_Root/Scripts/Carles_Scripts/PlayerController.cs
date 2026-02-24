@@ -131,16 +131,12 @@ public class PlayerController : MonoBehaviour
             ActualizarZoom(estaHaciendoZoom);
         }
 
-        // -------- CROUCH --------
-        // En inspección normalmente lo bloqueamos también.
+
         if (!bloquearMovimiento)
             ActualizarCrouch();
 
-        // -------- BLOQUEO DE MOVIMIENTO (inspección / UI) --------
         if (bloquearMovimiento)
             return;
-
-        // -------- MOVIMIENTO --------
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
